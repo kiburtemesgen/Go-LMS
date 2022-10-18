@@ -20,6 +20,9 @@ import (
 )
 
 func main() {
+
+	userController := handlers.UserController{}
+
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile)
 	log.SetPrefix("go-lms-api" + " : ")
 	log := log.New(os.Stdout, log.Prefix(), log.Flags())
@@ -70,7 +73,7 @@ func main() {
 	migrations.Migrate(db)
 
 	app := gin.Default()
-	handlers.ApplyRoutes(app, authenticator, db)
+	handlers.ApplyRoutes(app, authenticator, db, &userController)
 	app.Use(database.InjectDB(db))
 	app.Run(configs.CFG.Server.Host)
 }

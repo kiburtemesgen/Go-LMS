@@ -15,5 +15,6 @@
 # vendor/
 
 go.sum
+.env
 .DS_Store
 cmd/.DS_Store

@@ -20,11 +20,13 @@ func pingHandler(c *gin.Context) {
 }
 
 // ApplyRoutes applies router to gin engine
-func ApplyRoutes(r *gin.Engine, auth *auth.Authenticator, db *gorm.DB) {
+func ApplyRoutes(r *gin.Engine, auth *auth.Authenticator, db *gorm.DB, controller *UserController) {
 	models.SetRepoDB(db)
 	authenticator = auth
 	apiV1 := r.Group("/v1")
 	{
 		apiV1.GET("/ping", pingHandler)
+		apiV1.POST("/signup", controller.SignUp)
+
 	}
 }
