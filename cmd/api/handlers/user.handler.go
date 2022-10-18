@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"fmt"
 	"go-lms-of-pupilfirst/cmd/models"
 	"go-lms-of-pupilfirst/pkg/auth"
 	"log"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/pkg/errors"
 
 	"github.com/gin-gonic/gin"
@@ -98,4 +100,46 @@ type UserInfoUpdateRequest struct {
 	About     string `gorm:"type:text" json:"about" validate:"omitempty"`
 
 	TimeZone *time.Time `json:"timezone" validation:"omitempty"`
+}
+
+func (ctrl *UserController) SignIn(ctx *gin.Context) {
+
+	var loginBody UserLoginRequest
+	ctx.ShouldBindJSON(&loginBody)
+	user := &models.User{
+		Email: loginBody.Email,
+	}
+
+	// db.Where("email = ?", user.Email).First(&user)
+	// db.Where("email = ?", "kibur@email.com").First(&user)
+
+	user.FetchByEmail()
+	fmt.Println("user ID is: ", user.ID)
+	if user.GetID() == "" {
+		return
+	}
+	saltedPassword := loginBody.Password + user.PasswordSalt
+	if err := bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(saltedPassword)); err != nil {
+		err = errors.WithStack(errors.New("ErrAuthenticationFailure"))
+		return
+	}
+
+	claims := auth.Claims{
+		StandardClaims: jwt.StandardClaims{
+			Subject:   user.ID,
+			Audience:  "",
+			IssuedAt:  time.Now().Unix(),
+			ExpiresAt: time.Now().Add(time.Second * 20000).Unix(),
+		},
+	}
+
+	token, _ := authenticator.GenerateToken(claims)
+
+	c, _ := authenticator.ParseClaims(token)
+	fmt.Println(c)
+	ctx.JSON(200, gin.H{
+		"message": "user has been logged in successfully",
+		"token":   token,
+	})
+
 }

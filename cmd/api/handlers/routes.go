@@ -27,6 +27,7 @@ func ApplyRoutes(r *gin.Engine, auth *auth.Authenticator, db *gorm.DB, controlle
 	{
 		apiV1.GET("/ping", pingHandler)
 		apiV1.POST("/signup", controller.SignUp)
+		apiV1.POST("/signin", controller.SignIn)
 
 	}
 }
